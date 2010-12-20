@@ -14,27 +14,26 @@
    window.onload = onload;
 
    //## parser.js ##//
+   //## evaluator.js ##//
 
-   function mui (source) {
-     var tick = 1;
-     while (tick) {
-       
-       
-     }
-     eval(source);
+   var primitive = makePrimitiveEnvironment();
+
+   function main2 (source) {
+     source = parser(source);
+     evaluate(source, primitive);
    }
 
    /*
     * It would be better to avoid the same domain restriction.
     */
    function main () {
-     $("script[type=text/mui]").each(
+     $("script[type=text/cadence]").each(
        function () {
          var src;
          if ((src = $(this).attr("src"))) {
-           $.get(src, "", mui, "text/plain");
+           $.get(src, "", cadence, "text/plain");
          }
-         mui($(this).text());
+         cadence($(this).text());
        });
    }
  })();
