@@ -13,13 +13,14 @@
    }
    window.onload = onload;
 
+   //## bootstrap.js ##//
+   var bootstrap = makeBootstrapEnvironment();
+
    //## parser.js ##//
    //## evaluator.js ##//
 
-   var primitive = makePrimitiveEnvironment();
-
    function main2 (source) {
-     source = parser(source);
+     source = parser(source, bootstrap);
      evaluate(source, primitive);
    }
 

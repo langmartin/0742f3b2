@@ -1,4 +1,4 @@
-function parser (src) {
+function parser (src, bootstrap) {
   var idx, end = src.length;
   var ch, state = 0;
   var result = [], data = result;
