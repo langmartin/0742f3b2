@@ -1,17 +1,15 @@
-function parser (src, bootstrap) {
-  var idx, end = src.length;
-  var ch, state = 0;
-  var result = [], data = result;
 
+function parser (src, bootstrap) {
   var open = { "(":1, "{":"curly-bracket", "[":"square-bracket"};
   open.s = [];
   open.do = function () {
     var tmp, word = open[ch];
-    if (typeof word == "string") tmp = ["word"];
-    else tmp = [];
-    data.push(tmp);
-    open.s.push(data);
-    data = tmp;
+    if (typeof word == "string") {
+      ls.cons(word, parser(src, ls, idx));
+    }
+    else {
+      ls.cons(parser(src, ls, idx));
+    }
   };
 
   var close = { ")":1, "}":1, "]":1 };
@@ -37,45 +35,61 @@ function parser (src, bootstrap) {
     }
   }
 
-  var symbol = {};
-  symbol.do = function () {
-    if (! symbol.s) symbol.s = [];
-    symbol.s.push(ch);
-    state = "s";
-  };
+  var state = 0;
+  var idx, length = src.length;
 
-  var number = {};
-  number.do = function () {
-    if (! number.s) number.s = [];
-    number.s.push(ch);
-    state = "n";
-  };
 
-  for (idx = 0; idx < end; idx++) {
-    ch = src[idx];
-    // console.debug(ch, state)
-    switch (state) {
-    case 0:
-      if (open[ch]) open.do();
-      else if (close[ch]) close.do();
-      else if (white[ch]) noop();
-      else if (isNumeric(ch)) number.do();
-      else symbol.do();
-      break;
-    case "s":
-      if (close[ch]) close.do();
-      else if (white[ch]) white.do();
-      else symbol.do();
-      break;
-    case "n":
-      if (close[ch]) close.do();
-      else if (white[ch]) white.do();
-      else number.do();
+  function symbol () {
+    var sym = [], ch;
+    for (; idx < length; idx++) {
+      ch = src[idx];
+      if (close[ch]) break;
+      if (white[ch]) break;
+      else sym.push(ch);
     }
+    return sym.join('');
   }
-  eject();
+
+  function number () {
+    var num = [], ch;
+    for (; idx < length; idx++) {
+      ch = src[idx];
+      if (close[ch]) break;
+      if (white[ch]) break;
+      else num.push(ch);
+    }
+    return Number(num.join(''));
+  }
+      
+
+
+  function parse (idx) {
+    for (; idx < length; idx++) {
+      ch = src[idx];
+      // console.debug(ch, state)
+      switch (state) {
+      case 0:
+        if (open[ch]) return open.do();
+        if (close[ch]) return close.do();
+        if (white[ch]) noop();
+        if (isNumeric(ch)) return number.do();
+        else return symbol.do();
+        break;
+      case "s":
+        if (close[ch]) return close.do();
+        else if (white[ch]) white.do();
+        else symbol.do();
+        break;
+      case "n":
+        if (close[ch]) close.do();
+        else if (white[ch]) white.do();
+        else number.do();
+      }
+    }
+    eject();
+  }
   
-  return result;
+  return parse(0, 0);
 }
 
 assert(
